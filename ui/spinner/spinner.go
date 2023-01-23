@@ -10,25 +10,32 @@ import (
 )
 
 type model struct {
-	spinner spinner.Model
-	artist  string
-	song    string
-	Title   string
-	Lyrics  string
-	Exit    bool
+	spinner     spinner.Model
+	artist      string
+	song        string
+	album       bool
+	AlbumTitles []string
+	AlbumLyrics []string
+	Title       string
+	Lyrics      string
+	Exit        bool
 }
 
-func InitialModel(artist, song string) model {
+func InitialModel(artist, song string, album bool) model {
 	s := spinner.New()
 	s.Spinner = spinner.Dot
 	s.Style = lg.NewStyle().Foreground(lg.Color("205"))
 
-	m := model{spinner: s, artist: artist, song: song}
+	m := model{spinner: s, artist: artist, song: song, album: album}
 	return m
 }
 
 func (m model) Init() tea.Cmd {
-	return tea.Batch(m.spinner.Tick, fetch.Get(m.artist, m.song))
+	if m.album {
+		return tea.Batch(m.spinner.Tick, fetch.GetAlbum(m.artist, m.song))
+	} else {
+		return tea.Batch(m.spinner.Tick, fetch.GetSong(m.artist, m.song))
+	}
 }
 
 func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -41,6 +48,12 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		default:
 			return m, nil
 		}
+
+	case fetch.AlbumMsg:
+		m.AlbumTitles = msg.Titles
+		m.AlbumLyrics = msg.Lyrics
+		return m, tea.Quit
+
 	case fetch.ResMsg:
 		m.Title = msg.Title
 		m.Lyrics = msg.Lyrics

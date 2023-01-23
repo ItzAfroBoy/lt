@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-func Args(artist, song string) (string, string) {
+func FormatArgs(artist, song string) (string, string) {
 	artist = strings.ReplaceAll(strings.ToUpper(string(artist[0]))+artist[1:], " ", "-")
 	song = strings.ReplaceAll(strings.ToLower(song), " ", "-")
 
@@ -53,4 +53,17 @@ func Lyrics(lyrics string) string {
 	}
 
 	return strings.Join(sections, "\n")
+}
+
+func AlbumList(list string) []string {
+	data := strings.Split(list, "<div class=\"chart_row-content\">")
+	sections := []string{}
+
+	for i := 1; i < len(data); i++ {
+		str, _, _ := strings.Cut(data[i], "\" class=\"u-display_block\">")
+		_, str, _ = strings.Cut(str, "href=\"")
+		sections = append(sections, str)
+	}
+
+	return sections
 }

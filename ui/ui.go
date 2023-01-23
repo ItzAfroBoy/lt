@@ -34,6 +34,9 @@ func max(a, b int) int {
 type Model struct {
 	Title    string
 	Content  string
+	titles   []string
+	lyrics   []string
+	index    int
 	ready    bool
 	viewport viewport.Model
 }
@@ -57,6 +60,11 @@ func InitialModel(title, lyrics string) Model {
 	return m
 }
 
+func AlbumInitialModel(titles, lyrics []string) Model {
+	m := Model{Title: fmt.Sprintf("%s [%d/%d]", titles[0], 1, len(titles)), Content: lyrics[0], titles: titles, lyrics: lyrics, index: 0}
+	return m
+}
+
 func (m Model) Init() tea.Cmd {
 	return nil
 }
@@ -68,8 +76,28 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 
 	case tea.KeyMsg:
-		if k := msg.String(); k == "ctrl+c" || k == "q" || k == "esc" {
+		if k := msg.String(); k == "ctrl+c" || k == "esc" {
 			return m, tea.Quit
+		} else if k == "e" {
+			m.index += 1
+
+			if m.index > len(m.lyrics)-1 {
+				m.index = 0
+			}
+
+			m.Title = fmt.Sprintf("%s [%d/%d]", m.titles[m.index], m.index+1, len(m.titles))
+			m.Content = m.lyrics[m.index]
+			m.viewport.SetContent(m.Content)
+		} else if k == "q" {
+			m.index -= 1
+
+			if m.index < 0 {
+				m.index = len(m.lyrics) - 1
+			}
+
+			m.Title = fmt.Sprintf("%s [%d/%d]", m.titles[m.index], m.index+1, len(m.titles))
+			m.Content = m.lyrics[m.index]
+			m.viewport.SetContent(m.Content)
 		}
 
 	case tea.WindowSizeMsg:
