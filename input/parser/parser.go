@@ -13,9 +13,13 @@ func FormatArgs(artist, song string) (string, string) {
 }
 
 func Title(title string) string {
+	space, _ := regexp.Compile("\u200b")
+
 	_, title, _ = strings.Cut(title, "<title>")
 	title, _, _ = strings.Cut(title, "</title>")
 	title = strings.TrimSuffix(title, " Lyrics | Genius Lyrics")
+	title = strings.TrimSuffix(title, " | Genius")
+	title = space.ReplaceAllString(title, "")
 
 	return title
 }
@@ -66,4 +70,25 @@ func AlbumList(list string) []string {
 	}
 
 	return sections
+}
+
+func WordWrap(lyrics string, width int) string {
+	lines := strings.Split(lyrics, "\n")
+	out := []string{}
+	for _, line := range lines {
+		newLine := []string{}
+		for i, char := range line {
+			i += 1
+			if i%width == 0 {
+				newLine = append(newLine, "\n")
+			}
+
+			newLine = append(newLine, string(char))
+		}
+
+		out = append(out, newLine...)
+		out = append(out, "\n")
+	}
+
+	return strings.Join(out, "")
 }

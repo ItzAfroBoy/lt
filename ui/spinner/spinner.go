@@ -12,7 +12,6 @@ import (
 type model struct {
 	spinner     spinner.Model
 	artist      string
-	song        string
 	album       bool
 	AlbumTitles []string
 	AlbumLyrics []string
@@ -21,20 +20,20 @@ type model struct {
 	Exit        bool
 }
 
-func InitialModel(artist, song string, album bool) model {
+func InitialModel(artist, title string, album bool) model {
 	s := spinner.New()
 	s.Spinner = spinner.Dot
 	s.Style = lg.NewStyle().Foreground(lg.Color("205"))
 
-	m := model{spinner: s, artist: artist, song: song, album: album}
+	m := model{spinner: s, artist: artist, Title: title, album: album}
 	return m
 }
 
 func (m model) Init() tea.Cmd {
 	if m.album {
-		return tea.Batch(m.spinner.Tick, fetch.GetAlbum(m.artist, m.song))
+		return tea.Batch(m.spinner.Tick, fetch.GetAlbum(m.artist, m.Title))
 	} else {
-		return tea.Batch(m.spinner.Tick, fetch.GetSong(m.artist, m.song))
+		return tea.Batch(m.spinner.Tick, fetch.GetSong(m.artist, m.Title))
 	}
 }
 

@@ -25,10 +25,10 @@ type model struct {
 	focusIndex int
 	inputs     []textinput.Model
 	cursorMode textinput.CursorMode
-	Exit	   bool
+	Exit       bool
 }
 
-func InitialModel(artist, song string) model {	
+func InitialModel(artist, title string) model {
 	m := model{
 		inputs: make([]textinput.Model, 2),
 	}
@@ -48,9 +48,9 @@ func InitialModel(artist, song string) model {
 			}
 
 		case 1:
-			t.Placeholder = "Song"
-			if song != "" {
-				t.SetValue(song)
+			t.Placeholder = "Title"
+			if title != "" {
+				t.SetValue(title)
 
 			}
 		}

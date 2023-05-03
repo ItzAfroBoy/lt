@@ -38,10 +38,10 @@ func Get(url string) (string, string) {
 	return title, lyrics
 }
 
-func GetSong(artist, song string) tea.Cmd {
+func GetSong(artist, title string) tea.Cmd {
 	return func() tea.Msg {
-		artist, song = parser.FormatArgs(artist, song)
-		url := fmt.Sprintf("https://genius.com/%s-%s-lyrics", artist, song)
+		artist, title = parser.FormatArgs(artist, title)
+		url := fmt.Sprintf("https://genius.com/%s-%s-lyrics", artist, title)
 		title, lyrics := Get(url)
 		if title == "" && lyrics == "" {
 			return ResMsg{"", ""}
@@ -65,19 +65,18 @@ func GetAlbum(artist, album string) tea.Cmd {
 			return ResMsg{"", ""}
 		}
 
-		data := string(body)
-		tracklist := parser.AlbumList(data)
+		tracklist := parser.AlbumList(string(body))
 		var titles, lyrics []string
 
-		for _, i := range tracklist {
-			t, l := Get(i)
+		for _, song := range tracklist {
+			title, lyric := Get(song)
 
-			if t == "" && l == "" {
+			if title == "" && lyric == "" {
 				continue
 			}
 
-			titles = append(titles, t)
-			lyrics = append(lyrics, l)
+			titles = append(titles, title)
+			lyrics = append(lyrics, lyric)
 		}
 
 		return AlbumMsg{titles, lyrics}

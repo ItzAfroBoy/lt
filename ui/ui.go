@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/ItzAfroBoy/lt/input/parser"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	lg "github.com/charmbracelet/lipgloss"
@@ -78,7 +79,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		if k := msg.String(); k == "ctrl+c" || k == "esc" {
 			return m, tea.Quit
-		} else if k == "e" {
+		} else if k == "e" && len(m.titles) > 0 {
 			m.index += 1
 
 			if m.index > len(m.lyrics)-1 {
@@ -87,17 +88,21 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			m.Title = fmt.Sprintf("%s [%d/%d]", m.titles[m.index], m.index+1, len(m.titles))
 			m.Content = m.lyrics[m.index]
-			m.viewport.SetContent(m.Content)
+			m.viewport.SetContent(parser.WordWrap(m.Content, m.viewport.Width))
 		} else if k == "q" {
-			m.index -= 1
+			if len(m.titles) > 0 {
+				m.index -= 1
 
-			if m.index < 0 {
-				m.index = len(m.lyrics) - 1
+				if m.index < 0 {
+					m.index = len(m.lyrics) - 1
+				}
+
+				m.Title = fmt.Sprintf("%s [%d/%d]", m.titles[m.index], m.index+1, len(m.titles))
+				m.Content = m.lyrics[m.index]
+				m.viewport.SetContent(parser.WordWrap(m.Content, m.viewport.Width))
+			} else {
+				return m, tea.Quit
 			}
-
-			m.Title = fmt.Sprintf("%s [%d/%d]", m.titles[m.index], m.index+1, len(m.titles))
-			m.Content = m.lyrics[m.index]
-			m.viewport.SetContent(m.Content)
 		}
 
 	case tea.WindowSizeMsg:
@@ -109,7 +114,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.viewport = viewport.New(msg.Width, msg.Height-verticalMarginHeight)
 			m.viewport.YPosition = headerHeight
 			m.viewport.HighPerformanceRendering = false
-			m.viewport.SetContent(m.Content)
+			m.viewport.SetContent(parser.WordWrap(m.Content, m.viewport.Width))
 			m.ready = true
 		} else {
 			m.viewport.Width = msg.Width

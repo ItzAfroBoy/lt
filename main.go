@@ -13,15 +13,15 @@ import (
 
 func main() {
 	artist := flag.String("artist", "", "Artist of the song")
-	song := flag.String("song", "", "Name of the song")
+	title := flag.String("title", "", "Title of the song or album")
 	skip := flag.Bool("skip", false, "Skip prompt")
-	album := flag.Bool("album", false, "Search for album instead of song")
+	album := flag.Bool("album", false, "Album mode")
 
 	flag.Parse()
 
 	if !*skip {
-		im := input.InitialModel(*artist, *song)
-		if err := tea.NewProgram(&im).Start(); err != nil {
+		im := input.InitialModel(*artist, *title)
+		if _, err := tea.NewProgram(&im).Run(); err != nil {
 			fmt.Println("Couldn't run program:", err)
 			os.Exit(1)
 		}
@@ -29,15 +29,15 @@ func main() {
 			os.Exit(130)
 		}
 
-		*artist, *song = im.Save()
+		*artist, *title = im.Save()
 	}
 
-	if *artist == "" || *song == "" {
+	if *artist == "" || *title == "" {
 		os.Exit(126)
 	}
 
-	sm := spinner.InitialModel(*artist, *song, *album)
-	if err := tea.NewProgram(&sm).Start(); err != nil {
+	sm := spinner.InitialModel(*artist, *title, *album)
+	if _, err := tea.NewProgram(&sm).Run(); err != nil {
 		fmt.Println("Couldn't run program:", err)
 		os.Exit(1)
 	}
@@ -50,7 +50,7 @@ func main() {
 		title, lyrics := sm.Title, sm.Lyrics
 
 		um := ui.InitialModel(title, lyrics)
-		if err := tea.NewProgram(um, tea.WithAltScreen(), tea.WithMouseCellMotion()).Start(); err != nil {
+		if _, err := tea.NewProgram(um, tea.WithAltScreen(), tea.WithMouseCellMotion()).Run(); err != nil {
 			fmt.Println("Couldn't run program:", err)
 			os.Exit(1)
 		}
@@ -62,7 +62,7 @@ func main() {
 		titles, lyrics := sm.AlbumTitles, sm.AlbumLyrics
 
 		um := ui.AlbumInitialModel(titles, lyrics)
-		if err := tea.NewProgram(um, tea.WithAltScreen(), tea.WithMouseCellMotion()).Start(); err != nil {
+		if _, err := tea.NewProgram(um, tea.WithAltScreen(),tea.WithMouseCellMotion()).Run(); err != nil {
 			fmt.Println("Couldn't run program:", err)
 			os.Exit(1)
 		}
