@@ -3,6 +3,7 @@ package parser
 import (
 	"regexp"
 	"strings"
+	"os"
 )
 
 func FormatArgs(artist, song string) (string, string) {
@@ -12,14 +13,21 @@ func FormatArgs(artist, song string) (string, string) {
 	return artist, song
 }
 
-func Title(title string) string {
+func Title(title string, album bool) string {
 	space, _ := regexp.Compile("\u200b")
 
-	_, title, _ = strings.Cut(title, "<title>")
-	title, _, _ = strings.Cut(title, "</title>")
-	title = strings.TrimSuffix(title, " Lyrics | Genius Lyrics")
-	title = strings.TrimSuffix(title, " | Genius")
-	title = space.ReplaceAllString(title, "")
+	if !album {
+		_, title, _ = strings.Cut(title, "<title>")
+		title, _, _ = strings.Cut(title, "</title>")
+		title = strings.TrimSuffix(title, " Lyrics | Genius Lyrics")
+		title = strings.TrimSuffix(title, " | Genius")
+		title = space.ReplaceAllString(title, "")
+	} else {
+		_, title, _ = strings.Cut(title, "<title>")
+		title, _, _ = strings.Cut(title, "</title>")
+		title = strings.TrimSuffix(title, " Lyrics and Tracklist | Genius")
+		title = space.ReplaceAllString(title, "")
+	}
 
 	return title
 }
@@ -78,17 +86,20 @@ func WordWrap(lyrics string, width int) string {
 	for _, line := range lines {
 		newLine := []string{}
 		for i, char := range line {
-			i += 1
+			i++
 			if i%width == 0 {
 				newLine = append(newLine, "\n")
 			}
-
 			newLine = append(newLine, string(char))
 		}
-
 		out = append(out, newLine...)
 		out = append(out, "\n")
 	}
 
 	return strings.Join(out, "")
+}
+
+func UserHomeDir() string {
+	dir, _ := os.UserHomeDir()
+	return dir
 }

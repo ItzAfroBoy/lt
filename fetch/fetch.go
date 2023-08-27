@@ -17,22 +17,23 @@ type ResMsg struct {
 type AlbumMsg struct {
 	Titles []string
 	Lyrics []string
+	AlbumTitle string
 }
 
 func Get(url string) (string, string) {
 	res, err := http.Get(url)
 	if err != nil {
-		return "", ""
+		return "Error", err.Error()
 	}
 
 	defer res.Body.Close()
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
-		return "", ""
+		return "Error", err.Error()
 	}
 
 	data := string(body)
-	title := parser.Title(data)
+	title := parser.Title(data, false)
 	lyrics := parser.Lyrics(data)
 
 	return title, lyrics
@@ -56,16 +57,17 @@ func GetAlbum(artist, album string) tea.Cmd {
 		artist, album = parser.FormatArgs(artist, album)
 		res, err := http.Get(fmt.Sprintf("https://genius.com/albums/%s/%s", artist, album))
 		if err != nil {
-			return ResMsg{"", ""}
+			return ResMsg{"Error", err.Error()}
 		}
 
 		defer res.Body.Close()
 		body, err := io.ReadAll(res.Body)
 		if err != nil {
-			return ResMsg{"", ""}
+			return ResMsg{"Error", err.Error()}
 		}
 
 		tracklist := parser.AlbumList(string(body))
+		albumTitle := parser.Title(string(body), true)
 		var titles, lyrics []string
 
 		for _, song := range tracklist {
@@ -79,6 +81,6 @@ func GetAlbum(artist, album string) tea.Cmd {
 			lyrics = append(lyrics, lyric)
 		}
 
-		return AlbumMsg{titles, lyrics}
+		return AlbumMsg{titles, lyrics, albumTitle}
 	}
 }

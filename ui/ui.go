@@ -77,9 +77,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 
 	case tea.KeyMsg:
-		if k := msg.String(); k == "ctrl+c" || k == "esc" {
+		if k := msg.String(); k == "ctrl+c" || k == "esc" || k == "q" {
 			return m, tea.Quit
-		} else if k == "e" && len(m.titles) > 0 {
+		} else if (k == "right") && len(m.titles) > 0 {
 			m.index += 1
 
 			if m.index > len(m.lyrics)-1 {
@@ -89,20 +89,18 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.Title = fmt.Sprintf("%s [%d/%d]", m.titles[m.index], m.index+1, len(m.titles))
 			m.Content = m.lyrics[m.index]
 			m.viewport.SetContent(parser.WordWrap(m.Content, m.viewport.Width))
-		} else if k == "q" {
-			if len(m.titles) > 0 {
-				m.index -= 1
+			m.viewport.GotoTop()
+		} else if (k == "left") && len(m.titles) > 0 {
+			m.index -= 1
 
-				if m.index < 0 {
-					m.index = len(m.lyrics) - 1
-				}
-
-				m.Title = fmt.Sprintf("%s [%d/%d]", m.titles[m.index], m.index+1, len(m.titles))
-				m.Content = m.lyrics[m.index]
-				m.viewport.SetContent(parser.WordWrap(m.Content, m.viewport.Width))
-			} else {
-				return m, tea.Quit
+			if m.index < 0 {
+				m.index = len(m.lyrics) - 1
 			}
+
+			m.Title = fmt.Sprintf("%s [%d/%d]", m.titles[m.index], m.index+1, len(m.titles))
+			m.Content = m.lyrics[m.index]
+			m.viewport.SetContent(parser.WordWrap(m.Content, m.viewport.Width))
+			m.viewport.GotoTop()
 		}
 
 	case tea.WindowSizeMsg:
@@ -133,5 +131,5 @@ func (m Model) View() string {
 		return "\n Initializing..."
 	}
 
-	return fmt.Sprintf("%s\n%s\n%s", m.headerView(), m.viewport.View(), m.footerView())
+	return fmt.Sprintf("\033]0;%s [%3.f%%]\a%s\n%s\n%s", m.Title,  m.viewport.ScrollPercent()*100, m.headerView(), m.viewport.View(), m.footerView())
 }

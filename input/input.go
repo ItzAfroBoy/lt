@@ -10,12 +10,12 @@ import (
 )
 
 var (
-	focusedStyle        = lg.NewStyle().Foreground(lg.Color("205"))
-	blurredStyle        = lg.NewStyle().Foreground(lg.Color("240"))
-	cursorStyle         = focusedStyle.Copy()
-	noStyle             = lg.NewStyle()
-	helpStyle           = blurredStyle.Copy()
-	cursorModeHelpStyle = lg.NewStyle().Foreground(lg.Color("244"))
+	focusedStyle       = lg.NewStyle().Foreground(lg.Color("205"))
+	blurredStyle       = lg.NewStyle().Foreground(lg.Color("240"))
+	cursorStyle        = focusedStyle.Copy()
+	noStyle            = lg.NewStyle()
+	helpStyle          = blurredStyle.Copy()
+	albumModeHelpStyle = lg.NewStyle().Foreground(lg.Color("244"))
 
 	focusedButton = focusedStyle.Copy().Render("[ Submit ]")
 	blurredButton = fmt.Sprintf("[ %s ]", blurredStyle.Render("Submit"))
@@ -24,18 +24,19 @@ var (
 type model struct {
 	focusIndex int
 	inputs     []textinput.Model
-	cursorMode textinput.CursorMode
+	albumMode  bool
 	Exit       bool
 }
 
-func InitialModel(artist, title string) model {
+func InitialModel(artist, title string, albumMode bool) model {
 	m := model{
-		inputs: make([]textinput.Model, 2),
+		inputs:    make([]textinput.Model, 2),
+		albumMode: albumMode,
 	}
 
 	for i := range m.inputs {
 		t := textinput.New()
-		t.CursorStyle = cursorStyle
+		t.Cursor.Style = cursorStyle
 
 		switch i {
 		case 0:
@@ -84,15 +85,11 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 
 		case "ctrl+r":
-			m.cursorMode++
-			if m.cursorMode > textinput.CursorHide {
-				m.cursorMode = textinput.CursorBlink
+			if m.albumMode {
+				m.albumMode = false
+			} else {
+				m.albumMode = true
 			}
-			cmds := make([]tea.Cmd, len(m.inputs))
-			for i := range m.inputs {
-				cmds[i] = m.inputs[i].SetCursorMode(m.cursorMode)
-			}
-			return m, tea.Batch(cmds...)
 
 		case "tab", "shift+tab", "enter", "up", "down":
 			s := msg.String()
@@ -151,13 +148,20 @@ func (m model) View() string {
 	}
 	fmt.Fprintf(&b, "\n\n%s\n\n", *button)
 
-	b.WriteString(helpStyle.Render("cursor mode is "))
-	b.WriteString(cursorModeHelpStyle.Render(m.cursorMode.String()))
-	b.WriteString(helpStyle.Render(" (ctrl+r to change style)"))
+	b.WriteString(helpStyle.Render("album mode is "))
+	b.WriteString(albumModeHelpStyle.Render(m.albumModeString()))
+	b.WriteString(helpStyle.Render(" (ctrl+r to change mode)"))
 
 	return b.String()
 }
 
-func (m model) Save() (string, string) {
-	return m.inputs[0].Value(), m.inputs[1].Value()
+func (m model) albumModeString() string {
+	if m.albumMode {
+		return "on"
+	}
+	return "off"
+}
+
+func (m model) Save() (string, string, bool) {
+	return m.inputs[0].Value(), m.inputs[1].Value(), m.albumMode
 }

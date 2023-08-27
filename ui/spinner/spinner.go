@@ -13,6 +13,7 @@ type model struct {
 	spinner     spinner.Model
 	artist      string
 	album       bool
+	albumTitle  string
 	AlbumTitles []string
 	AlbumLyrics []string
 	Title       string
@@ -51,6 +52,7 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case fetch.AlbumMsg:
 		m.AlbumTitles = msg.Titles
 		m.AlbumLyrics = msg.Lyrics
+		m.albumTitle = msg.AlbumTitle
 		return m, tea.Quit
 
 	case fetch.ResMsg:
