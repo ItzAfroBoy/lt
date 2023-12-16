@@ -15,8 +15,8 @@ type ResMsg struct {
 }
 
 type AlbumMsg struct {
-	Titles []string
-	Lyrics []string
+	Titles     []string
+	Lyrics     []string
 	AlbumTitle string
 }
 

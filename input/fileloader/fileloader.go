@@ -8,12 +8,11 @@ import (
 
 	"github.com/ItzAfroBoy/lt/input/parser"
 	"github.com/charmbracelet/bubbles/filepicker"
-	fp "github.com/charmbracelet/bubbles/filepicker"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
 type model struct {
-	filepicker   fp.Model
+	filepicker   filepicker.Model
 	SelectedFile string
 	Exit         bool
 	err          error
@@ -55,6 +54,7 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	if didSelect, path := m.filepicker.DidSelectFile(msg); didSelect {
 		m.SelectedFile = path
+		return m, tea.Quit
 	}
 
 	if didSelect, path := m.filepicker.DidSelectDisabledFile(msg); didSelect {

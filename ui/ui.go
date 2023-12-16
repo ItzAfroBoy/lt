@@ -2,12 +2,14 @@ package ui
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/ItzAfroBoy/lt/input/parser"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	lg "github.com/charmbracelet/lipgloss"
+	"github.com/muesli/termenv"
 )
 
 func titleStyle() lg.Style {
@@ -131,5 +133,7 @@ func (m Model) View() string {
 		return "\n Initializing..."
 	}
 
-	return fmt.Sprintf("\033]0;%s [%3.f%%]\a%s\n%s\n%s", m.Title,  m.viewport.ScrollPercent()*100, m.headerView(), m.viewport.View(), m.footerView())
+	out := termenv.NewOutput(os.Stdout)
+	out.SetWindowTitle(fmt.Sprintf("%s [%3.f%%]", m.Title, m.viewport.ScrollPercent()*100))
+	return fmt.Sprintf("%s\n%s\n%s", m.headerView(), m.viewport.View(), m.footerView())
 }
