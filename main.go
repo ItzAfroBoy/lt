@@ -35,7 +35,7 @@ func getSavedLyrics() (string, string) {
 }
 
 func saveLyrics(title, lyrics string) {
-	outpath := path.Join(parser.UserHomeDir(), "Saved Lyrics", fmt.Sprintf("%s.txt", title))
+	outpath := path.Join(parser.UserHomeDir(), "Saved Lyrics", fmt.Sprintf("%s.lt", title))
 	output := fmt.Sprintf("%s\n\n%s\n", title, lyrics)
 	if err := os.MkdirAll(path.Join(parser.UserHomeDir(), "Saved Lyrics"), 0o755); err != nil {
 		fmt.Println("Couldn't create directory:", err)

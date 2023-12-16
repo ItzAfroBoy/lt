@@ -28,7 +28,7 @@ func clearErrorAfter(t time.Duration) tea.Cmd {
 
 func InitialModel() Model {
 	fp := filepicker.New()
-	fp.AllowedTypes = []string{".txt"}
+	fp.AllowedTypes = []string{".lt"}
 	fp.CurrentDirectory = path.Join(parser.UserHomeDir(), "Saved Lyrics")
 	return Model{filepicker: fp}
 }
