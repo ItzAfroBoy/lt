@@ -14,11 +14,6 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-func userHomeDir() string {
-	dir, _ := os.UserHomeDir()
-	return dir
-}
-
 func getSavedLyrics() (string, string) {
 	fm := fileloader.InitialModel()
 	if _, err := tea.NewProgram(&fm).Run(); err != nil {
@@ -40,14 +35,19 @@ func getSavedLyrics() (string, string) {
 }
 
 func saveLyrics(title, lyrics string) {
-	outpath := path.Join(userHomeDir(), "Saved Lyrics", fmt.Sprintf("%s.txt", title))
+	outpath := path.Join(parser.UserHomeDir(), "Saved Lyrics", fmt.Sprintf("%s.txt", title))
 	output := fmt.Sprintf("%s\n\n%s\n", title, lyrics)
-	if err := os.WriteFile(outpath, []byte(output), 0755); err != nil {
+	if err := os.MkdirAll(path.Join(parser.UserHomeDir(), "Saved Lyrics"), 0o755); err != nil {
+		fmt.Println("Couldn't create directory:", err)
+		os.Exit(1)
+	}
+
+	if err := os.WriteFile(outpath, []byte(output), 0o755); err != nil {
 		fmt.Println("Couldn't save lyrics:", err)
 		os.Exit(1)
-	} else {
-		fmt.Printf("%s lyrics saved\n", title)
 	}
+
+	fmt.Printf("%s lyrics saved\n", title)
 }
 
 func displayLyrics(title, lyrics string) {

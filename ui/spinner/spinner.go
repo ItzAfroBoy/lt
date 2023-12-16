@@ -9,7 +9,7 @@ import (
 	lg "github.com/charmbracelet/lipgloss"
 )
 
-type model struct {
+type Model struct {
 	spinner     spinner.Model
 	artist      string
 	album       bool
@@ -21,24 +21,23 @@ type model struct {
 	Exit        bool
 }
 
-func InitialModel(artist, title string, album bool) model {
+func InitialModel(artist, title string, album bool) Model {
 	s := spinner.New()
 	s.Spinner = spinner.Dot
 	s.Style = lg.NewStyle().Foreground(lg.Color("205"))
 
-	m := model{spinner: s, artist: artist, Title: title, album: album}
+	m := Model{spinner: s, artist: artist, Title: title, album: album}
 	return m
 }
 
-func (m model) Init() tea.Cmd {
+func (m Model) Init() tea.Cmd {
 	if m.album {
 		return tea.Batch(m.spinner.Tick, fetch.GetAlbum(m.artist, m.Title))
-	} else {
-		return tea.Batch(m.spinner.Tick, fetch.GetSong(m.artist, m.Title))
 	}
+	return tea.Batch(m.spinner.Tick, fetch.GetSong(m.artist, m.Title))
 }
 
-func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -68,7 +67,7 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 }
 
-func (m model) View() string {
+func (m Model) View() string {
 	var str string
 
 	if !m.Exit {

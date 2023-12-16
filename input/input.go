@@ -21,15 +21,15 @@ var (
 	blurredButton = fmt.Sprintf("[ %s ]", blurredStyle.Render("Submit"))
 )
 
-type model struct {
+type Model struct {
 	focusIndex int
 	inputs     []textinput.Model
 	albumMode  bool
 	Exit       bool
 }
 
-func InitialModel(artist, title string, albumMode bool) model {
-	m := model{
+func InitialModel(artist, title string, albumMode bool) Model {
+	m := Model{
 		inputs:    make([]textinput.Model, 2),
 		albumMode: albumMode,
 	}
@@ -62,7 +62,7 @@ func InitialModel(artist, title string, albumMode bool) model {
 	return m
 }
 
-func (m *model) updateInputs(msg tea.Msg) tea.Cmd {
+func (m *Model) updateInputs(msg tea.Msg) tea.Cmd {
 	cmds := make([]tea.Cmd, len(m.inputs))
 
 	for i := range m.inputs {
@@ -72,11 +72,11 @@ func (m *model) updateInputs(msg tea.Msg) tea.Cmd {
 	return tea.Batch(cmds...)
 }
 
-func (m model) Init() tea.Cmd {
+func (m Model) Init() tea.Cmd {
 	return textinput.Blink
 }
 
-func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -132,7 +132,7 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
-func (m model) View() string {
+func (m Model) View() string {
 	var b strings.Builder
 
 	for i := range m.inputs {
@@ -155,13 +155,13 @@ func (m model) View() string {
 	return b.String()
 }
 
-func (m model) albumModeString() string {
+func (m Model) albumModeString() string {
 	if m.albumMode {
 		return "on"
 	}
 	return "off"
 }
 
-func (m model) Save() (string, string, bool) {
+func (m Model) Save() (string, string, bool) {
 	return m.inputs[0].Value(), m.inputs[1].Value(), m.albumMode
 }

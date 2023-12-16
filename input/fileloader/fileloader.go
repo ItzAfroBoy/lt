@@ -11,7 +11,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-type model struct {
+type Model struct {
 	filepicker   filepicker.Model
 	SelectedFile string
 	Exit         bool
@@ -26,18 +26,18 @@ func clearErrorAfter(t time.Duration) tea.Cmd {
 	})
 }
 
-func InitialModel() model {
+func InitialModel() Model {
 	fp := filepicker.New()
 	fp.AllowedTypes = []string{".txt"}
 	fp.CurrentDirectory = path.Join(parser.UserHomeDir(), "Saved Lyrics")
-	return model{filepicker: fp}
+	return Model{filepicker: fp}
 }
 
-func (m model) Init() tea.Cmd {
+func (m Model) Init() tea.Cmd {
 	return m.filepicker.Init()
 }
 
-func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -66,7 +66,7 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
-func (m model) View() string {
+func (m Model) View() string {
 	if m.Exit {
 		return ""
 	}
