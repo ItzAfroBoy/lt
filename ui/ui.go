@@ -2,11 +2,14 @@ package ui
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
+	"github.com/ItzAfroBoy/lt/input/parser"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	lg "github.com/charmbracelet/lipgloss"
+	"github.com/muesli/termenv"
 )
 
 func titleStyle() lg.Style {
@@ -34,6 +37,9 @@ func max(a, b int) int {
 type Model struct {
 	Title    string
 	Content  string
+	titles   []string
+	lyrics   []string
+	index    int
 	ready    bool
 	viewport viewport.Model
 }
@@ -57,6 +63,11 @@ func InitialModel(title, lyrics string) Model {
 	return m
 }
 
+func AlbumInitialModel(titles, lyrics []string) Model {
+	m := Model{Title: fmt.Sprintf("%s [%d/%d]", titles[0], 1, len(titles)), Content: lyrics[0], titles: titles, lyrics: lyrics, index: 0}
+	return m
+}
+
 func (m Model) Init() tea.Cmd {
 	return nil
 }
@@ -68,8 +79,30 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 
 	case tea.KeyMsg:
-		if k := msg.String(); k == "ctrl+c" || k == "q" || k == "esc" {
+		if k := msg.String(); k == "ctrl+c" || k == "esc" || k == "q" {
 			return m, tea.Quit
+		} else if (k == "right") && len(m.titles) > 0 {
+			m.index += 1
+
+			if m.index > len(m.lyrics)-1 {
+				m.index = 0
+			}
+
+			m.Title = fmt.Sprintf("%s [%d/%d]", m.titles[m.index], m.index+1, len(m.titles))
+			m.Content = m.lyrics[m.index]
+			m.viewport.SetContent(parser.WordWrap(m.Content, m.viewport.Width))
+			m.viewport.GotoTop()
+		} else if (k == "left") && len(m.titles) > 0 {
+			m.index -= 1
+
+			if m.index < 0 {
+				m.index = len(m.lyrics) - 1
+			}
+
+			m.Title = fmt.Sprintf("%s [%d/%d]", m.titles[m.index], m.index+1, len(m.titles))
+			m.Content = m.lyrics[m.index]
+			m.viewport.SetContent(parser.WordWrap(m.Content, m.viewport.Width))
+			m.viewport.GotoTop()
 		}
 
 	case tea.WindowSizeMsg:
@@ -81,7 +114,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.viewport = viewport.New(msg.Width, msg.Height-verticalMarginHeight)
 			m.viewport.YPosition = headerHeight
 			m.viewport.HighPerformanceRendering = false
-			m.viewport.SetContent(m.Content)
+			m.viewport.SetContent(parser.WordWrap(m.Content, m.viewport.Width))
 			m.ready = true
 		} else {
 			m.viewport.Width = msg.Width
@@ -100,5 +133,7 @@ func (m Model) View() string {
 		return "\n Initializing..."
 	}
 
+	out := termenv.NewOutput(os.Stdout)
+	out.SetWindowTitle(fmt.Sprintf("%s [%3.f%%]", m.Title, m.viewport.ScrollPercent()*100))
 	return fmt.Sprintf("%s\n%s\n%s", m.headerView(), m.viewport.View(), m.footerView())
 }
