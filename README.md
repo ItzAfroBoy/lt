@@ -11,6 +11,8 @@
                \/__/                                                   
 <br>
 Lyrics in the terminal
+<br>
+<img alt="GitHub License" src="https://img.shields.io/github/license/ItzAfroBoy/lt"> <img alt="GitHub tag (with filter)" src="https://img.shields.io/github/v/tag/ItzAfroBoy/lt?label=version"> <a href="https://www.codefactor.io/repository/github/itzafroboy/lt"><img src="https://www.codefactor.io/repository/github/itzafroboy/lt/badge" alt="CodeFactor" /></a> <img alt="GitHub code size in bytes" src="https://img.shields.io/github/languages/code-size/ItzAfroBoy/lt">
 </pre>
 </div>
 
@@ -19,7 +21,7 @@ Lyrics in the terminal
 ### Install with go
 
 ```shell
-go install github.com/ItzAfroBoy/lt
+go install github.com/ItzAfroBoy/lt@latest
 lt ...
 ```
 
@@ -39,7 +41,7 @@ lt ...
 - `--raw`: Prints undecorated output to terminal. Not functional with `--album`  
 - `--album`: Fetches lyrics for entire album  
 - `--skip`: Skips in-program input. Use when `--artist` and `--title` are passed  
-- `--save`: Save the lyrics for offline use.
+- `--save`: Save the lyrics for offline use. Not functional with `--album`  
 - `--load`: Load saved lyrics
 
 Powered by [Genius](https://genius.com)
