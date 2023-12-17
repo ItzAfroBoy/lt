@@ -100,10 +100,13 @@ func main() {
 	}
 
 	if !*album {
-		if sm.Title == "" || sm.Lyrics == "" {
-			os.Exit(126)
+		if !*load {
+			if sm.Title == "" || sm.Lyrics == "" {
+				os.Exit(126)
+			}
+
+			*title, lyrics = sm.Title, sm.Lyrics
 		}
-		*title, lyrics = sm.Title, sm.Lyrics
 
 		if *raw {
 			displayLyricsRaw(*title, lyrics)
