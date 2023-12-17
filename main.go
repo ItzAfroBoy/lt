@@ -97,14 +97,14 @@ func main() {
 			fmt.Println("Couldn't run program:", err)
 			os.Exit(1)
 		}
+	}
 
+	if !*album {
 		if sm.Title == "" || sm.Lyrics == "" {
 			os.Exit(126)
 		}
 		*title, lyrics = sm.Title, sm.Lyrics
-	}
 
-	if !*album {
 		if *raw {
 			displayLyricsRaw(*title, lyrics)
 		} else {
