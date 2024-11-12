@@ -15,18 +15,19 @@ import (
 var artist *string
 var title *string
 var albumMode *bool
-// var raw *bool
+var raw *bool
+
 // var save *bool
 var p *tea.Program
 
 type model struct {
-	focusIndex int
-	inputs     []textinput.Model
-	spinner spinner.Model
-	index    int
-	ready    bool
-	viewport viewport.Model
-	content  string
+	focusIndex  int
+	inputs      []textinput.Model
+	spinner     spinner.Model
+	index       int
+	ready       bool
+	viewport    viewport.Model
+	content     string
 	albumTitles []string
 	albumLyrics []string
 	title       string
@@ -43,14 +44,14 @@ var (
 	albumModeHelpStyle = lg.NewStyle().Foreground(lg.Color("244"))
 
 	focusedButton = focusedStyle.Render("[ Submit ]")
-	blurredButton = fmt.Sprintf("[ %s ]", blurredStyle.Render("Submit"))
+	blurredButton = blurredStyle.Render("[ Submit ]")
 )
 
 func init() {
 	artist = flag.String("artist", "none", "Artist of the song to fetch")
 	title = flag.String("title", "none", "Title of the song to fetch")
 	albumMode = flag.Bool("album", false, "Fetch lyrics for all songs in an album")
-	// raw = flag.Bool("raw", false, "Show the raw text to the terminal")
+	raw = flag.Bool("raw", false, "Show the raw text to the terminal")
 	// save = flag.Bool("export", false, "Save your lyrics to a LT file")
 
 	flag.Parse()
@@ -68,7 +69,7 @@ func main() {
 func initalModel() model {
 	m := model{}
 	m.inputs = make([]textinput.Model, 2)
-	
+
 	for i := range m.inputs {
 		t := textinput.New()
 		t.Cursor.Style = cursorStyle
@@ -126,6 +127,8 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case "ui":
 		_m, cmd = m.updateUIModel(msg)
 		m = _m.(*model)
+	case "raw":
+		return m, tea.Sequence(tea.ClearScreen, tea.Println(m.title, m.content), tea.Quit)
 	}
 
 	if m.exit {

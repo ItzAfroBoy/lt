@@ -2,13 +2,11 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	lg "github.com/charmbracelet/lipgloss"
-	"github.com/muesli/termenv"
 )
 
 func titleStyle() lg.Style {
@@ -44,6 +42,16 @@ func (m model) footerView() string {
 	return lg.JoinHorizontal(lg.Center, line, info)
 }
 
+func (m *model) UIInit() tea.Cmd {
+	if *raw{
+		return tea.Quit
+	} else if *albumMode {
+		m.title = fmt.Sprintf("%s [%d/%d]", m.albumTitles[m.index], m.index+1, len(m.albumTitles))
+	}
+
+	return tea.SetWindowTitle(m.title)
+}
+
 func (m *model) updateUIModel(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	var cmds []tea.Cmd
@@ -61,6 +69,7 @@ func (m *model) updateUIModel(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			m.title = fmt.Sprintf("%s [%d/%d]", m.albumTitles[m.index], m.index+1, len(m.albumTitles))
 			m.content = m.albumLyrics[m.index]
+			cmds = append(cmds, tea.SetWindowTitle(m.title))
 			m.viewport.SetContent(m.wordWrap())
 			m.viewport.GotoTop()
 		} else if (k == "left") && len(m.albumTitles) > 0 {
@@ -72,6 +81,7 @@ func (m *model) updateUIModel(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			m.title = fmt.Sprintf("%s [%d/%d]", m.albumTitles[m.index], m.index+1, len(m.albumTitles))
 			m.content = m.albumLyrics[m.index]
+			cmds = append(cmds, tea.SetWindowTitle(m.title))
 			m.viewport.SetContent(m.wordWrap())
 			m.viewport.GotoTop()
 		}
@@ -95,7 +105,6 @@ func (m *model) updateUIModel(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	m.viewport, cmd = m.viewport.Update(msg)
 	cmds = append(cmds, cmd)
-
 	return m, tea.Batch(cmds...)
 }
 
@@ -103,8 +112,5 @@ func (m model) UIView() string {
 	if !m.ready {
 		return "\n Initializing..."
 	}
-
-	out := termenv.NewOutput(os.Stdout)
-	out.SetWindowTitle(fmt.Sprintf("%s [%3.f%%]", m.title, m.viewport.ScrollPercent()*100))
 	return fmt.Sprintf("%s\n%s\n%s", m.headerView(), m.viewport.View(), m.footerView())
 }

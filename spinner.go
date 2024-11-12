@@ -21,12 +21,17 @@ func (m *model) updateSpinnerModel(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.title = m.albumTitles[0]
 		m.content = m.albumLyrics[0]
 		m.state = "ui"
-		return m, tea.WindowSize()
+		return m, tea.Batch(tea.EnterAltScreen, m.UIInit(), tea.WindowSize())
 	case resMsg:
 		m.title = msg.title
 		m.content = msg.lyrics
+		if *raw {
+			m.state = "raw"
+			return m, nil
+		}
+
 		m.state = "ui"
-		return m, tea.Batch(tea.EnterAltScreen, tea.WindowSize())
+		return m, tea.Batch(tea.EnterAltScreen, m.UIInit(), tea.WindowSize())
 	default:
 		var cmd tea.Cmd
 		m.spinner, cmd = m.spinner.Update(msg)
