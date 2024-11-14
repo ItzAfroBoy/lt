@@ -122,10 +122,10 @@ func (m *model) Init() tea.Cmd {
 		m.state = "spinner"
 		formatArgs()
 		return m.spinnerInit()
-	} else {
-		m.state = "input"
-		return textinput.Blink
 	}
+
+	m.state = "input"
+	return textinput.Blink
 }
 
 func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {

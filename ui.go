@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/viewport"
@@ -21,13 +22,6 @@ func infoStyle() lg.Style {
 	return titleStyle().BorderStyle(b)
 }
 
-func max(a, b int) int {
-	if a > b {
-		return a
-	}
-	return b
-}
-
 func (m model) headerView() string {
 	title := titleStyle().Render(m.title)
 	line := strings.Repeat("-", max(0, m.viewport.Width-lg.Width(title)))
@@ -43,6 +37,9 @@ func (m model) footerView() string {
 }
 
 func (m *model) UIInit() tea.Cmd {
+	if *raw {
+		os.Exit(1)
+	}
 	if *albumMode {
 		m.title = fmt.Sprintf("%s [%d/%d]", m.albumTitles[m.index], m.index+1, len(m.albumTitles))
 		m.content = m.albumLyrics[m.index]
