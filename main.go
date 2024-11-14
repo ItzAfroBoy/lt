@@ -4,7 +4,9 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path"
 
+	"github.com/charmbracelet/bubbles/filepicker"
 	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbles/textinput"
 	"github.com/charmbracelet/bubbles/viewport"
@@ -16,11 +18,13 @@ var artist *string
 var title *string
 var albumMode *bool
 var raw *bool
-
-// var save *bool
+var save *bool
+var load *bool
 var p *tea.Program
 
 type model struct {
+	filepicker  filepicker.Model
+	err         error
 	focusIndex  int
 	inputs      []textinput.Model
 	spinner     spinner.Model
@@ -52,9 +56,13 @@ func init() {
 	title = flag.String("title", "none", "Title of the song to fetch")
 	albumMode = flag.Bool("album", false, "Fetch lyrics for all songs in an album")
 	raw = flag.Bool("raw", false, "Show the raw text to the terminal")
-	// save = flag.Bool("export", false, "Save your lyrics to a LT file")
+	save = flag.Bool("export", false, "Save your lyrics to a LT file")
+	load = flag.Bool("import", false, "Load your lyrics from an LT file")
 
 	flag.Parse()
+	if *raw && *albumMode {
+		os.Exit(1)
+	}
 }
 
 func main() {
@@ -98,12 +106,26 @@ func initalModel() model {
 	s.Style = lg.NewStyle().Foreground(lg.Color("205"))
 	m.spinner = s
 
+	fp := filepicker.New()
+	fp.AllowedTypes = []string{".lt"}
+	fp.CurrentDirectory = path.Join(userHomeDir(), "Saved Lyrics")
+	m.filepicker = fp
+
 	return m
 }
 
 func (m *model) Init() tea.Cmd {
-	m.state = "input"
-	return textinput.Blink
+	if *load {
+		m.state = "filepicker"
+		return m.filepicker.Init()
+	} else if *artist != "none" && *title != "none" {
+		m.state = "spinner"
+		formatArgs()
+		return m.spinnerInit()
+	} else {
+		m.state = "input"
+		return textinput.Blink
+	}
 }
 
 func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -115,9 +137,14 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "esc", "ctrl+c":
 			return m, tea.Quit
 		}
+	case clearErrorMsg:
+		m.err = nil
 	}
 
 	switch m.state {
+	case "filepicker":
+		_m, cmd = m.updateFPModel(msg)
+		m = _m.(*model)
 	case "input":
 		_m, cmd = m.updateInputsModel(msg)
 		m = _m.(*model)
@@ -140,6 +167,8 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m model) View() string {
 	switch m.state {
+	case "filepicker":
+		return m.FPView()
 	case "input":
 		return m.inputsView()
 	case "spinner":
@@ -148,5 +177,19 @@ func (m model) View() string {
 		return m.UIView()
 	default:
 		return ""
+	}
+}
+
+func (m model) saveLyrics() {
+	outpath := path.Join(userHomeDir(), "Saved Lyrics", fmt.Sprintf("%s.lt", m.title))
+	output := fmt.Sprintf("%s\n\n%s\n", m.title, m.content)
+	if err := os.MkdirAll(path.Join(userHomeDir(), "Saved Lyrics"), 0o755); err != nil {
+		fmt.Println("Couldn't create directory:", err)
+		os.Exit(1)
+	}
+
+	if err := os.WriteFile(outpath, []byte(output), 0o755); err != nil {
+		fmt.Println("Couldn't save lyrics:", err)
+		os.Exit(1)
 	}
 }

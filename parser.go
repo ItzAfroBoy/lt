@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"regexp"
 	"strings"
 )
@@ -60,10 +61,6 @@ func parseLyrics(lyrics string) string {
 	return strings.Join(sections, "\n")
 }
 
-// func (m *model) rawLyrics() {
-// 	m.title, m.lyrics, _ = strings.Cut(m.lyrics, "\n\n")
-// }
-
 func albumList(list string) []string {
 	data := strings.Split(list, "<div class=\"chart_row-content\">")
 	sections := []string{}
@@ -96,7 +93,17 @@ func (m model) wordWrap() string {
 	return strings.Join(out, "")
 }
 
-// func userHomeDir() string {
-// 	dir, _ := os.UserHomeDir()
-// 	return dir
-// }
+func parseFile(file string) (title, content string) {
+	rawFile, err := os.ReadFile(file)
+	if err != nil {
+		panic(err)
+	}
+	parsedFile := string(rawFile)
+	title, content, _ = strings.Cut(parsedFile, "\n\n")
+	return
+}
+
+func userHomeDir() string {
+	dir, _ := os.UserHomeDir()
+	return dir
+}

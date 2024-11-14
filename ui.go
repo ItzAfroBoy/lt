@@ -43,10 +43,9 @@ func (m model) footerView() string {
 }
 
 func (m *model) UIInit() tea.Cmd {
-	if *raw{
-		return tea.Quit
-	} else if *albumMode {
+	if *albumMode {
 		m.title = fmt.Sprintf("%s [%d/%d]", m.albumTitles[m.index], m.index+1, len(m.albumTitles))
+		m.content = m.albumLyrics[m.index]
 	}
 
 	return tea.SetWindowTitle(m.title)
@@ -59,6 +58,15 @@ func (m *model) updateUIModel(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		if k := msg.String(); k == "q" {
+			if *load {
+				m.state = "filepicker"
+				if *albumMode {
+					m.albumTitles, m.albumLyrics = []string{}, []string{}
+					*albumMode = false
+				}
+
+				return m, tea.Batch(tea.ExitAltScreen, tea.WindowSize())
+			}
 			return m, tea.Quit
 		} else if (k == "right") && len(m.albumTitles) > 0 {
 			m.index += 1
