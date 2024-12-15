@@ -1,6 +1,7 @@
 package main
 
 import (
+	// "fmt"
 	"os"
 	"regexp"
 	"strings"
@@ -39,7 +40,7 @@ func parseLyrics(lyrics string) string {
 
 	for i := 1; i < len(data); i++ {
 		str, _, _ := strings.Cut(data[i], "</div><div class=\"RightSidebar__Container-pajcl2-0 jOFKJt\"")
-		str = breaks.ReplaceAllString(str[46:], "\n")
+		str = breaks.ReplaceAllString(str[36:], "\n")
 		str = bold.ReplaceAllString(str, "\x1b[1m$1\x1b[0m")
 		str = italic.ReplaceAllString(str, "\x1b[2m$1\x1b[0m")
 		str = tags.ReplaceAllString(str, "")
