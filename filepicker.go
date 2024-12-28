@@ -26,11 +26,6 @@ func (m *model) updateFPModel(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "ctrl+a":
-			if *albumMode {
-				m.err = errors.New("invalid operation")
-				return m, tea.Batch(cmd, clearErrorAfter(2*time.Second))
-			}
-
 			files, _ := os.ReadDir(m.filepicker.CurrentDirectory)
 			for _, v := range files {
 				if strings.HasSuffix(v.Name(), ".lt") {
@@ -42,10 +37,13 @@ func (m *model) updateFPModel(msg tea.Msg) (tea.Model, tea.Cmd) {
 			*albumMode = true
 			m.state = "ui"
 			return m, tea.Batch(tea.EnterAltScreen, m.UIInit(), tea.WindowSize())
+		case "q":
+			return m, tea.Quit
 		}
 	}
 
 	if didSelect, path := m.filepicker.DidSelectFile(msg); didSelect {
+		*albumMode = false
 		m.title, m.content = parseFile(path)
 		m.state = "ui"
 
@@ -66,10 +64,6 @@ func (m *model) updateFPModel(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) FPView() string {
-	if m.exit {
-		return ""
-	}
-
 	var s strings.Builder
 	s.WriteString("\n  ")
 	if m.err != nil {

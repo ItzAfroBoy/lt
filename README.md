@@ -36,11 +36,14 @@ lt ...
 
 ## Usage
 
-`Usage: lt [--raw] [--save] [--load] [--album] [--artist ARTIST] [--title TITLE]`  
+`Usage: lt [--raw] [--export | import] [--album] [--artist ARTIST] [--title TITLE]`  
 
 - `--raw`: Prints undecorated output to terminal. Not functional with `--album`  
 - `--album`: Fetches lyrics for entire album  
-- `--save`: Save the lyrics for offline use. Not functional with `--album`  
-- `--load`: Load saved lyrics
+- `--export`: Save the lyrics for offline use. Not functional with `--album`  
+- `--import`: Load saved lyrics
 
-Powered by [Genius](https://genius.com)
+Powered by:
+
+- [Genius](https://genius.com)
+- [Bubbletea](https://github.com/charmbracelet/bubbletea/)

@@ -44,6 +44,10 @@ func (m *model) UIInit() tea.Cmd {
 		m.title = fmt.Sprintf("%s [%d/%d]", m.albumTitles[m.index], m.index+1, len(m.albumTitles))
 		m.content = m.albumLyrics[m.index]
 	}
+	if m.ready {
+		m.viewport.SetContent(m.wordWrap())
+		m.viewport.GotoTop()
+	}
 
 	return tea.SetWindowTitle(m.title)
 }

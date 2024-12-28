@@ -36,7 +36,6 @@ type model struct {
 	albumLyrics []string
 	title       string
 	state       string
-	exit        bool
 }
 
 var (
@@ -156,10 +155,6 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m = _m.(*model)
 	case "raw":
 		return m, tea.Sequence(tea.ClearScreen, tea.Println(m.title, m.content), tea.Quit)
-	}
-
-	if m.exit {
-		return m, tea.Quit
 	}
 
 	return m, cmd

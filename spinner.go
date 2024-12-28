@@ -44,12 +44,5 @@ func (m *model) updateSpinnerModel(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) spinnerView() string {
-	var str string
-	if !m.exit {
-		str = fmt.Sprintf("%s Fetching lyrics...", m.spinner.View())
-	} else {
-		str = fmt.Sprintf("%s Quitting...\n", m.spinner.View())
-	}
-
-	return str
+	return fmt.Sprintf("%s Fetching lyrics...", m.spinner.View()) 
 }
