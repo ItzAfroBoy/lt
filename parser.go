@@ -1,42 +1,35 @@
-package parser
+package main
 
 import (
+	// "fmt"
 	"os"
 	"regexp"
 	"strings"
 )
 
-func FormatArgs(artist, song string) (string, string) {
-	artist = strings.ReplaceAll(strings.ToUpper(string(artist[0]))+artist[1:], " ", "-")
-	song = strings.ReplaceAll(strings.ToLower(song), " ", "-")
-
-	return artist, song
+func formatArgs() {
+	*artist = strings.ReplaceAll(strings.ToUpper(string((*artist)[0]))+(*artist)[1:], " ", "-")
+	*title = strings.ReplaceAll(strings.ToLower(*title), " ", "-")
 }
 
-func Title(title string, album bool) string {
+func formatTitle(title string) string {
 	space, _ := regexp.Compile("\u200b")
-
-	if !album {
-		_, title, _ = strings.Cut(title, "<title>")
-		title, _, _ = strings.Cut(title, "</title>")
-		title = strings.TrimSuffix(title, " Lyrics | Genius Lyrics")
-		title = strings.TrimSuffix(title, " | Genius")
-		title = space.ReplaceAllString(title, "")
-	} else {
-		_, title, _ = strings.Cut(title, "<title>")
-		title, _, _ = strings.Cut(title, "</title>")
-		title = strings.TrimSuffix(title, " Lyrics and Tracklist | Genius")
-		title = space.ReplaceAllString(title, "")
-	}
-
+	titleHTML, _ := regexp.Compile(`<title>(.+)( Lyrics.+)<\/title>`)
+	defer func() {
+		if r := recover(); r != nil {
+			p.Quit()
+		}
+	}()
+	title = titleHTML.FindAllStringSubmatch(title, -1)[0][1]
+	title = space.ReplaceAllString(title, "")
 	return title
 }
 
-func Lyrics(lyrics string) string {
+func parseLyrics(lyrics string) string {
 	data := strings.Split(lyrics, "data-lyrics-container=\"true\" ")
 	breaks, _ := regexp.Compile(`<br/>`)
-	bold, _ := regexp.Compile(`<b>(.+)<\/b>`)
-	italic, _ := regexp.Compile(`<i>(.+)<\/i>`)
+	bold, _ := regexp.Compile(`<b>([\s\S]+?)<\/b>`)
+	italic, _ := regexp.Compile(`<i>([\s\S]+?)<\/i>`)
 	tags, _ := regexp.Compile(`<\/*.+?>`)
 	single, _ := regexp.Compile(`&#x27;`)
 	double, _ := regexp.Compile(`&quot;`)
@@ -47,9 +40,9 @@ func Lyrics(lyrics string) string {
 
 	for i := 1; i < len(data); i++ {
 		str, _, _ := strings.Cut(data[i], "</div><div class=\"RightSidebar__Container-pajcl2-0 jOFKJt\"")
-		str = breaks.ReplaceAllString(str[46:], "\n")
+		str = breaks.ReplaceAllString(str[36:], "\n")
 		str = bold.ReplaceAllString(str, "\x1b[1m$1\x1b[0m")
-		str = italic.ReplaceAllString(str, "\x1b[3m$1\x1b[0m")
+		str = italic.ReplaceAllString(str, "\x1b[2m$1\x1b[0m")
 		str = tags.ReplaceAllString(str, "")
 		str = single.ReplaceAllString(str, "'")
 		str = double.ReplaceAllString(str, "\"")
@@ -69,12 +62,14 @@ func Lyrics(lyrics string) string {
 	return strings.Join(sections, "\n")
 }
 
-func RawLyrics(lyrics string) (string, string) {
-	title, lyrics, _ := strings.Cut(lyrics, "\n\n")
-	return title, lyrics
+func parseFile(file string) (title, content string) {
+	rawFile, _ := os.ReadFile(file)
+	parsedFile := string(rawFile)
+	title, content, _ = strings.Cut(parsedFile, "\n\n")
+	return
 }
 
-func AlbumList(list string) []string {
+func albumList(list string) []string {
 	data := strings.Split(list, "<div class=\"chart_row-content\">")
 	sections := []string{}
 
@@ -87,14 +82,14 @@ func AlbumList(list string) []string {
 	return sections
 }
 
-func WordWrap(lyrics string, width int) string {
-	lines := strings.Split(lyrics, "\n")
+func (m model) wordWrap() string {
+	lines := strings.Split(m.content, "\n")
 	out := []string{}
 	for _, line := range lines {
 		newLine := []string{}
 		for i, char := range line {
 			i++
-			if i%width == 0 {
+			if i%m.viewport.Width == 0 {
 				newLine = append(newLine, "\n")
 			}
 			newLine = append(newLine, string(char))
@@ -106,7 +101,7 @@ func WordWrap(lyrics string, width int) string {
 	return strings.Join(out, "")
 }
 
-func UserHomeDir() string {
+func userHomeDir() string {
 	dir, _ := os.UserHomeDir()
 	return dir
 }
