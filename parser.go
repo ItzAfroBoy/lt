@@ -54,6 +54,7 @@ func parseLyrics(lyrics string) string {
 			embed, _ := regexp.Compile(`\d+Embed`)
 			str = embed.ReplaceAllString(str, "Embed")
 			str, _, _ = strings.Cut(str, "Embed")
+			str, _, _ = strings.Cut(str, "You might also like")
 		}
 
 		sections = append(sections, str)
