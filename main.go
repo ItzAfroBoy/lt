@@ -17,6 +17,7 @@ import (
 var artist *string
 var title *string
 var albumMode *bool
+var spotify *bool
 var raw *bool
 var save *bool
 var load *bool
@@ -57,6 +58,7 @@ func init() {
 	raw = flag.Bool("raw", false, "Show the raw text to the terminal")
 	save = flag.Bool("export", false, "Save your lyrics to a LT file")
 	load = flag.Bool("import", false, "Load your lyrics from an LT file")
+	spotify = flag.Bool("spotify", false, "Fetch currently playing song info from Spotify")
 
 	flag.Parse()
 	if *raw && *albumMode {
@@ -114,7 +116,11 @@ func initalModel() model {
 }
 
 func (m *model) Init() tea.Cmd {
-	if *load {
+	if *spotify {
+		m.state = "spinner"
+		getSpotifyInfo()
+		return m.spinnerInit()
+	} else if *load {
 		m.state = "filepicker"
 		return m.filepicker.Init()
 	} else if *artist != "none" && *title != "none" {

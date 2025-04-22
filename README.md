@@ -36,12 +36,13 @@ lt ...
 
 ## Usage
 
-`Usage: lt [--raw] [--export | import] [--album] [--artist ARTIST] [--title TITLE]`  
+`Usage: lt [--raw] [--spotify] [--export | import] [--album] [--artist ARTIST] [--title TITLE]`  
 
 - `--raw`: Prints undecorated output to terminal. Not functional with `--album`  
 - `--album`: Fetches lyrics for entire album  
 - `--export`: Save the lyrics for offline use. Not functional with `--album`  
 - `--import`: Load saved lyrics
+- `--spotify`: Connect to spotify to grab lyrics to current song. Not stable but functional. Not functional with `--album`
 
 Powered by:
 

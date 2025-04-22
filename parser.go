@@ -1,10 +1,11 @@
 package main
 
 import (
-	// "fmt"
 	"os"
 	"regexp"
 	"strings"
+
+	"github.com/PuerkitoBio/goquery"
 )
 
 func formatArgs() {
@@ -25,42 +26,33 @@ func formatTitle(title string) string {
 	return title
 }
 
+func formatSpotify(_artist, _title string) {
+	*artist = strings.ReplaceAll(strings.ToUpper(string((_artist)[0]))+(_artist)[1:], " ", "-")
+	*title = strings.ReplaceAll(strings.ToLower(_title), " ", "-")
+}
+
 func parseLyrics(lyrics string) string {
-	data := strings.Split(lyrics, "data-lyrics-container=\"true\" ")
-	breaks, _ := regexp.Compile(`<br/>`)
-	bold, _ := regexp.Compile(`<b>([\s\S]+?)<\/b>`)
-	italic, _ := regexp.Compile(`<i>([\s\S]+?)<\/i>`)
-	tags, _ := regexp.Compile(`<\/*.+?>`)
-	single, _ := regexp.Compile(`&#x27;`)
-	double, _ := regexp.Compile(`&quot;`)
-	amp, _ := regexp.Compile(`&amp;`)
-	div, _ := regexp.Compile(`.*<div `)
-	sec, _ := regexp.Compile(`>\[`)
-	sections := []string{}
+	doc, _ := goquery.NewDocumentFromReader(strings.NewReader(lyrics))
+	secs := doc.Find("div.Lyrics__Container-sc-78fb6627-1.hiRbsH")
+	secs.Each(func(i int, s *goquery.Selection) {
+		s.Find("div").Remove()
+		s.Find("br").ReplaceWithHtml("\n")
+		bold := s.Find("b")
+		italics := s.Find("i")
 
-	for i := 1; i < len(data); i++ {
-		str, _, _ := strings.Cut(data[i], "</div><div class=\"RightSidebar__Container-pajcl2-0 jOFKJt\"")
-		str = breaks.ReplaceAllString(str[36:], "\n")
-		str = bold.ReplaceAllString(str, "\x1b[1m$1\x1b[0m")
-		str = italic.ReplaceAllString(str, "\x1b[2m$1\x1b[0m")
-		str = tags.ReplaceAllString(str, "")
-		str = single.ReplaceAllString(str, "'")
-		str = double.ReplaceAllString(str, "\"")
-		str = amp.ReplaceAllString(str, "&")
-		str = div.ReplaceAllString(str, "")
-		str = sec.ReplaceAllString(str, "\n[")
+		bold.Each(func(i int, s *goquery.Selection) {
+			s.ReplaceWithHtml("\x1b[1m" + s.Text() + "\x1b[0m")
+		})
 
-		if i == len(data)-1 {
-			embed, _ := regexp.Compile(`\d+Embed`)
-			str = embed.ReplaceAllString(str, "Embed")
-			str, _, _ = strings.Cut(str, "Embed")
-			str, _, _ = strings.Cut(str, "You might also like")
+		italics.Each(func(i int, s *goquery.Selection) {
+			s.ReplaceWithHtml("\x1b[2m" + s.Text() + "\x1b[0m")
+		})
+		
+		if i != secs.Size()-1 && i%2 == 0 {
+			s.SetText(s.Text() + "\n")
 		}
-
-		sections = append(sections, str)
-	}
-
-	return strings.Join(sections, "\n")
+	})
+	return secs.Text()
 }
 
 func parseFile(file string) (title, content string) {
