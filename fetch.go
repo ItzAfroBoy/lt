@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"path"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -38,6 +39,10 @@ func get(url string) (string, string) {
 }
 
 func getSong() tea.Msg {
+	if title, lyrics, err := parseFile(path.Join(userHomeDir(), "Saved Lyrics", fmt.Sprintf("%s – %s.lt", *artist, *title))); err == nil {
+		return resMsg{title, lyrics}
+	}
+	formatArgs()
 	url := fmt.Sprintf("https://genius.com/%s-%s-lyrics", *artist, *title)
 	title, lyrics := get(url)
 	if title == "" && lyrics == "" {
@@ -48,6 +53,7 @@ func getSong() tea.Msg {
 }
 
 func getAlbum() tea.Msg {
+	formatArgs()
 	res, err := http.Get(fmt.Sprintf("https://genius.com/albums/%s/%s", *artist, *title))
 	if err != nil {
 		return resMsg{"Error", err.Error()}

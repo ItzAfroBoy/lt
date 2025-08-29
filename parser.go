@@ -33,7 +33,7 @@ func formatSpotify(_artist, _title string) {
 
 func parseLyrics(lyrics string) string {
 	doc, _ := goquery.NewDocumentFromReader(strings.NewReader(lyrics))
-	secs := doc.Find("div.Lyrics__Container-sc-78fb6627-1.hiRbsH")
+	secs := doc.Find("div.Lyrics__Container-sc-a49d8432-1.fBKwZw")
 	secs.Each(func(i int, s *goquery.Selection) {
 		s.Find("div").Remove()
 		s.Find("br").ReplaceWithHtml("\n")
@@ -55,8 +55,8 @@ func parseLyrics(lyrics string) string {
 	return secs.Text()
 }
 
-func parseFile(file string) (title, content string) {
-	rawFile, _ := os.ReadFile(file)
+func parseFile(file string) (title, content string, err error) {
+	rawFile, err := os.ReadFile(file)
 	parsedFile := string(rawFile)
 	title, content, _ = strings.Cut(parsedFile, "\n\n")
 	return

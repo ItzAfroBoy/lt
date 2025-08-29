@@ -73,6 +73,10 @@ func main() {
 		fmt.Println("Couldn't run program:", err)
 		os.Exit(1)
 	}
+
+	if *raw {
+		fmt.Printf("%s\n\n%s\n", m.title, m.content)
+	}
 }
 
 func initalModel() model {
@@ -125,7 +129,6 @@ func (m *model) Init() tea.Cmd {
 		return m.filepicker.Init()
 	} else if *artist != "none" && *title != "none" {
 		m.state = "spinner"
-		formatArgs()
 		return m.spinnerInit()
 	}
 
@@ -160,7 +163,7 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		_m, cmd = m.updateUIModel(msg)
 		m = _m.(*model)
 	case "raw":
-		return m, tea.Sequence(tea.ClearScreen, tea.Println(m.title, m.content), tea.Quit)
+		return m, tea.Quit
 	}
 
 	return m, cmd

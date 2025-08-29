@@ -32,7 +32,6 @@ func (m *model) updateInputsModel(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if s == "enter" && m.focusIndex == len(m.inputs) {
 				m.state = "spinner"
 				*artist, *title = m.inputs[0].Value(), m.inputs[1].Value()
-				formatArgs()
 				return m, m.spinnerInit()
 			}
 
