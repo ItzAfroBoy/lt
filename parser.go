@@ -29,11 +29,12 @@ func formatTitle(title string) string {
 func formatSpotify(_artist, _title string) {
 	*artist = strings.ReplaceAll(strings.ToUpper(string((_artist)[0]))+(_artist)[1:], " ", "-")
 	*title = strings.ReplaceAll(strings.ToLower(_title), " ", "-")
+	*title = strings.ReplaceAll(strings.ToLower(_title), "'", "")
 }
 
 func parseLyrics(lyrics string) string {
 	doc, _ := goquery.NewDocumentFromReader(strings.NewReader(lyrics))
-	secs := doc.Find("div.Lyrics__Container-sc-a49d8432-1.fBKwZw")
+	secs := doc.Find("[data-lyrics-container=true]")
 	secs.Each(func(i int, s *goquery.Selection) {
 		s.Find("div").Remove()
 		s.Find("br").ReplaceWithHtml("\n")

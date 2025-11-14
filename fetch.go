@@ -46,7 +46,7 @@ func getSong() tea.Msg {
 	url := fmt.Sprintf("https://genius.com/%s-%s-lyrics", *artist, *title)
 	title, lyrics := get(url)
 	if title == "" && lyrics == "" {
-		return resMsg{"", ""}
+		return resMsg{"Oh No!", "Something went wrong"}
 	}
 
 	return resMsg{title, lyrics}
