@@ -103,7 +103,6 @@ func (m *model) updateUIModel(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if !m.ready {
 			m.viewport = viewport.New(msg.Width, msg.Height-verticalMarginHeight)
 			m.viewport.YPosition = headerHeight
-			m.viewport.HighPerformanceRendering = false
 			m.viewport.SetContent(m.wordWrap())
 			m.ready = true
 		} else {

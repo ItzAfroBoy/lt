@@ -1,10 +1,11 @@
 package main
 
 import (
-	// "fmt"
 	"os"
 	"regexp"
 	"strings"
+
+	"github.com/PuerkitoBio/goquery"
 )
 
 func formatArgs() {
@@ -25,46 +26,38 @@ func formatTitle(title string) string {
 	return title
 }
 
-func parseLyrics(lyrics string) string {
-	data := strings.Split(lyrics, "data-lyrics-container=\"true\" ")
-	breaks, _ := regexp.Compile(`<br/>`)
-	bold, _ := regexp.Compile(`<b>([\s\S]+?)<\/b>`)
-	italic, _ := regexp.Compile(`<i>([\s\S]+?)<\/i>`)
-	tags, _ := regexp.Compile(`<\/*.+?>`)
-	single, _ := regexp.Compile(`&#x27;`)
-	double, _ := regexp.Compile(`&quot;`)
-	amp, _ := regexp.Compile(`&amp;`)
-	div, _ := regexp.Compile(`.*<div `)
-	sec, _ := regexp.Compile(`>\[`)
-	sections := []string{}
-
-	for i := 1; i < len(data); i++ {
-		str, _, _ := strings.Cut(data[i], "</div><div class=\"RightSidebar__Container-pajcl2-0 jOFKJt\"")
-		str = breaks.ReplaceAllString(str[36:], "\n")
-		str = bold.ReplaceAllString(str, "\x1b[1m$1\x1b[0m")
-		str = italic.ReplaceAllString(str, "\x1b[2m$1\x1b[0m")
-		str = tags.ReplaceAllString(str, "")
-		str = single.ReplaceAllString(str, "'")
-		str = double.ReplaceAllString(str, "\"")
-		str = amp.ReplaceAllString(str, "&")
-		str = div.ReplaceAllString(str, "")
-		str = sec.ReplaceAllString(str, "\n[")
-
-		if i == len(data)-1 {
-			embed, _ := regexp.Compile(`\d+Embed`)
-			str = embed.ReplaceAllString(str, "Embed")
-			str, _, _ = strings.Cut(str, "Embed")
-			str, _, _ = strings.Cut(str, "You might also like")
-		}
-
-		sections = append(sections, str)
-	}
-
-	return strings.Join(sections, "\n")
+func formatSpotify(_artist, _title string) {
+	*artist = strings.ReplaceAll(strings.ToUpper(string((_artist)[0]))+(_artist)[1:], " ", "-")
+	*title = strings.ReplaceAll(strings.ToLower(_title), " ", "-")
+	*title = strings.ReplaceAll(strings.ToLower(_title), "'", "")
 }
 
-func parseFile(file string) (title, content string) {
-	rawFile, _ := os.ReadFile(file)
+func parseLyrics(lyrics string) string {
+	doc, _ := goquery.NewDocumentFromReader(strings.NewReader(lyrics))
+	secs := doc.Find("[data-lyrics-container=true]")
+	secs.Each(func(i int, s *goquery.Selection) {
+		s.Find("div").Remove()
+		s.Find("br").ReplaceWithHtml("\n")
+		bold := s.Find("b")
+		italics := s.Find("i")
+
+		bold.Each(func(i int, s *goquery.Selection) {
+			s.ReplaceWithHtml("\x1b[1m" + s.Text() + "\x1b[0m")
+		})
+
+		italics.Each(func(i int, s *goquery.Selection) {
+			s.ReplaceWithHtml("\x1b[2m" + s.Text() + "\x1b[0m")
+		})
+		
+		if i != secs.Size()-1 && i%2 == 0 {
+			s.SetText(s.Text() + "\n")
+		}
+	})
+	return secs.Text()
+}
+
+func parseFile(file string) (title, content string, err error) {
+	rawFile, err := os.ReadFile(file)
 	parsedFile := string(rawFile)
 	title, content, _ = strings.Cut(parsedFile, "\n\n")
 	return

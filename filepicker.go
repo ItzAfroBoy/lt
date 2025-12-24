@@ -29,7 +29,7 @@ func (m *model) updateFPModel(msg tea.Msg) (tea.Model, tea.Cmd) {
 			files, _ := os.ReadDir(m.filepicker.CurrentDirectory)
 			for _, v := range files {
 				if strings.HasSuffix(v.Name(), ".lt") {
-					title, content := parseFile(path.Join(m.filepicker.CurrentDirectory, v.Name()))
+					title, content, _ := parseFile(path.Join(m.filepicker.CurrentDirectory, v.Name()))
 					m.albumTitles = append(m.albumTitles, title)
 					m.albumLyrics = append(m.albumLyrics, content)
 				}
@@ -44,7 +44,7 @@ func (m *model) updateFPModel(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	if didSelect, path := m.filepicker.DidSelectFile(msg); didSelect {
 		*albumMode = false
-		m.title, m.content = parseFile(path)
+		m.title, m.content, _ = parseFile(path)
 		m.state = "ui"
 
 		if *raw {

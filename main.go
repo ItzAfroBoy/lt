@@ -17,6 +17,7 @@ import (
 var artist *string
 var title *string
 var albumMode *bool
+var spotify *bool
 var raw *bool
 var save *bool
 var load *bool
@@ -57,6 +58,7 @@ func init() {
 	raw = flag.Bool("raw", false, "Show the raw text to the terminal")
 	save = flag.Bool("export", false, "Save your lyrics to a LT file")
 	load = flag.Bool("import", false, "Load your lyrics from an LT file")
+	spotify = flag.Bool("spotify", false, "Fetch currently playing song info from Spotify")
 
 	flag.Parse()
 	if *raw && *albumMode {
@@ -70,6 +72,10 @@ func main() {
 	if _, err := p.Run(); err != nil {
 		fmt.Println("Couldn't run program:", err)
 		os.Exit(1)
+	}
+
+	if *raw {
+		fmt.Printf("%s\n\n%s\n", m.title, m.content)
 	}
 }
 
@@ -114,12 +120,15 @@ func initalModel() model {
 }
 
 func (m *model) Init() tea.Cmd {
-	if *load {
+	if *spotify {
+		m.state = "spinner"
+		getSpotifyInfo()
+		return m.spinnerInit()
+	} else if *load {
 		m.state = "filepicker"
 		return m.filepicker.Init()
 	} else if *artist != "none" && *title != "none" {
 		m.state = "spinner"
-		formatArgs()
 		return m.spinnerInit()
 	}
 
@@ -154,7 +163,7 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		_m, cmd = m.updateUIModel(msg)
 		m = _m.(*model)
 	case "raw":
-		return m, tea.Sequence(tea.ClearScreen, tea.Println(m.title, m.content), tea.Quit)
+		return m, tea.Quit
 	}
 
 	return m, cmd
